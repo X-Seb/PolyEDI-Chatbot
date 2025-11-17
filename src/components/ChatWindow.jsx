@@ -16,7 +16,7 @@ export default function ChatWindow({ messages, isTyping }) {
 
       {isTyping && (
         <div className="flex justify-start">
-          <div className="bg-neutral-800 border border-orange-500/30 rounded-2xl px-4 py-3 text-gray-100 text-sm shadow-lg">
+          <div className="bg-neutral-800 border border-green-500/40 rounded-2xl px-4 py-3 text-gray-100 text-sm shadow-lg">
             <span className="flex items-center gap-2">
               PolyÉDI écrit
               <span className="flex gap-1">

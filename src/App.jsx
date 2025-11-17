@@ -138,7 +138,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-neutral-900 text-gray-200 flex flex-col">
-      <header className="sticky top-0 z-10 bg-neutral-900 border-b border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-neutral-900 border-b border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 to-green-500">
             PolyÉDI
@@ -156,8 +156,8 @@ export default function App() {
         <p className="text-base font-bold text-gray-300">Conseiller virtuel pour des équipes inclusives.</p>
       </header>
 
-      <main className="flex-1 flex flex-col relative overflow-hidden min-h-0">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex justify-center">
+      <main className="flex-1 flex flex-col relative overflow-hidden min-h-0 pt-[73px]">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex justify-center pb-32">
           <div className="w-full max-w-3xl">
             <ChatWindow messages={combinedMessages} isTyping={!error && isTyping} />
           </div>
@@ -167,8 +167,8 @@ export default function App() {
           className={clsx(
             'w-full px-4 sm:px-6 py-4 bg-neutral-900/95 backdrop-blur-sm border-t border-neutral-800 flex flex-col items-center gap-4 transition-all duration-700 ease-out',
             hasDockedInput 
-              ? 'sticky bottom-0 left-0 right-0 translate-y-0' 
-              : 'absolute left-1/2 -translate-x-1/2 -translate-y-[40vh]',
+              ? 'fixed bottom-0 left-0 right-0 translate-y-0 z-40' 
+              : 'fixed left-1/2 -translate-x-1/2 -translate-y-[40vh] z-40',
             inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
           )}
         >
