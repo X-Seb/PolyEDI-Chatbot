@@ -171,7 +171,7 @@ export default function App() {
         <div className={clsx('flex-1 overflow-y-auto px-4 sm:px-6 flex justify-center transition-all duration-700', hasDockedInput ? 'py-6 pb-32' : 'pb-6')}>
           <div className="w-full max-w-3xl">
             {!hasDockedInput && (
-              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+              <div className="flex items-center justify-center min-h-[calc(100vh-300px)] -mt-16">
                 <div className="text-center space-y-4">
                   <p className="text-lg sm:text-xl text-gray-300 drop-shadow-lg">
                     {DEFAULT_WELCOME}
@@ -200,7 +200,7 @@ export default function App() {
         ) : (
           <div
             className={clsx(
-              'absolute left-0 right-0 top-1/2 -translate-y-1/2 w-full px-4 sm:px-6 py-4 flex flex-col items-center gap-4 z-30 transition-all duration-700 ease-out',
+              'absolute left-0 right-0 top-[45%] -translate-y-1/2 w-full px-4 sm:px-6 py-4 flex flex-col items-center gap-4 z-30 transition-all duration-700 ease-out',
               inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
             )}
           >
