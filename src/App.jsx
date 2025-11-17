@@ -34,35 +34,34 @@ export default function App() {
 
     const transformed = messages
       .map((message) => {
-        // Debug: log message structure
-        console.log('Botpress message:', message);
-
-        // Check if message has text block
-        if (message.block?.type === 'text' && typeof message.block.text === 'string') {
-          const isUserMessage = message.authorId === user?.userId;
-          return {
-            id: message.id,
-            sender: isUserMessage ? 'user' : 'ai',
-            text: message.block.text,
-          };
+        let text = null;
+        
+        // Check nested structure: message.block.block.text (for bubble type)
+        if (message.block?.block?.type === 'text' && typeof message.block.block.text === 'string') {
+          text = message.block.block.text;
         }
-
+        // Check direct structure: message.block.text (for direct text type)
+        else if (message.block?.type === 'text' && typeof message.block.text === 'string') {
+          text = message.block.text;
+        }
         // Fallback: check for text in other possible locations
-        if (typeof message.text === 'string') {
-          const isUserMessage = message.authorId === user?.userId;
-          return {
-            id: message.id,
-            sender: isUserMessage ? 'user' : 'ai',
-            text: message.text,
-          };
+        else if (typeof message.text === 'string') {
+          text = message.text;
         }
 
-        return null;
+        if (!text) {
+          return null;
+        }
+
+        const isUserMessage = message.authorId === user?.userId;
+        return {
+          id: message.id,
+          sender: isUserMessage ? 'user' : 'ai',
+          text: text,
+        };
       })
       .filter(Boolean);
 
-    console.log('Transformed messages:', transformed);
-    console.log('User ID:', user?.userId);
     return transformed;
   }, [messages, user?.userId]);
 
