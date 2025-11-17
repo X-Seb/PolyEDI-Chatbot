@@ -90,15 +90,21 @@ export default function App() {
   );
 
   useEffect(() => {
+    // Always ensure input is ready after mount
     const timer = setTimeout(() => setInputReady(true), 150);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (!hasDockedInput && hasUserMessage) {
+    if (hasUserMessage && !hasDockedInput) {
       setHasDockedInput(true);
+    } else if (!hasUserMessage && hasDockedInput && messages.length === 0) {
+      // Reset when conversation is cleared
+      setHasDockedInput(false);
+      // Ensure input is visible after reset
+      setInputReady(true);
     }
-  }, [hasDockedInput, hasUserMessage]);
+  }, [hasDockedInput, hasUserMessage, messages.length]);
 
   const handleSend = async (text) => {
     const trimmed = text.trim();
@@ -145,7 +151,12 @@ export default function App() {
           </div>
           {botpressConfigured && client && (
             <button
-              onClick={newConversation}
+              onClick={() => {
+                newConversation();
+                setHasDockedInput(false);
+                setLocalAlerts([]);
+                setInputReady(true);
+              }}
               className="px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-800 hover:bg-neutral-700 text-gray-300 border border-neutral-700 transition-colors"
               title="Nouvelle conversation"
             >
