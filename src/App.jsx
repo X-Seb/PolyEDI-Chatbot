@@ -168,34 +168,50 @@ export default function App() {
       </header>
 
       <main className="flex-1 flex flex-col relative overflow-hidden min-h-0 pt-[73px]">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex justify-center pb-32">
+        <div className={clsx('flex-1 overflow-y-auto px-4 sm:px-6 flex justify-center transition-all duration-700', hasDockedInput ? 'py-6 pb-32' : 'pb-6')}>
           <div className="w-full max-w-3xl">
+            {!hasDockedInput && (
+              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <div className="text-center space-y-4">
+                  <p className="text-lg sm:text-xl text-gray-300 drop-shadow-lg">
+                    {DEFAULT_WELCOME}
+                  </p>
+                </div>
+              </div>
+            )}
             <ChatWindow messages={combinedMessages} isTyping={!error && isTyping} />
           </div>
         </div>
 
-        <div
-          className={clsx(
-            'w-full px-4 sm:px-6 py-4 bg-neutral-900/95 backdrop-blur-sm border-t border-neutral-800 flex flex-col items-center gap-4 transition-all duration-700 ease-out',
-            hasDockedInput 
-              ? 'fixed bottom-0 left-0 right-0 translate-y-0 z-40' 
-              : 'fixed left-1/2 -translate-x-1/2 -translate-y-[40vh] z-40',
-            inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          )}
-        >
-          {!hasDockedInput && (
-            <p className="text-center text-lg sm:text-xl text-gray-300 drop-shadow-lg">
-              {DEFAULT_WELCOME}
-            </p>
-          )}
-
-          <ChatInput
-            onSend={handleSend}
-            disabled={sendDisabled}
-            className={clsx(hasDockedInput ? 'shadow-lg' : 'shadow-2xl')}
-            placeholder="Pose ta question sur l'ÉDI..."
-          />
-        </div>
+        {hasDockedInput ? (
+          <div
+            className={clsx(
+              'fixed bottom-0 left-0 right-0 w-full px-4 sm:px-6 py-4 bg-neutral-900/95 backdrop-blur-sm border-t border-neutral-800 flex flex-col items-center gap-4 z-40 transition-all duration-700 ease-out',
+              inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            )}
+          >
+            <ChatInput
+              onSend={handleSend}
+              disabled={sendDisabled}
+              className="shadow-lg"
+              placeholder="Pose ta question sur l'ÉDI..."
+            />
+          </div>
+        ) : (
+          <div
+            className={clsx(
+              'absolute left-0 right-0 top-1/2 -translate-y-1/2 w-full px-4 sm:px-6 py-4 flex flex-col items-center gap-4 z-30 transition-all duration-700 ease-out',
+              inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            )}
+          >
+            <ChatInput
+              onSend={handleSend}
+              disabled={sendDisabled}
+              className="shadow-2xl"
+              placeholder="Pose ta question sur l'ÉDI..."
+            />
+          </div>
+        )}
       </main>
     </div>
   );
