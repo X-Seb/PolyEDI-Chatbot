@@ -1,15 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
+import { useWebchat } from '@botpress/webchat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
-import { useChat } from './hooks/useChat';
+
+const DEFAULT_WELCOME = "Bonjour! Je suis PolyÉDI. Posez-moi une question sur l'ÉDI et les équipes de projet.";
 
 export default function App() {
-  const { messages, isTyping, sendMessage } = useChat();
+  const clientId = import.meta.env.VITE_BOTPRESS_CLIENT_ID ?? '';
   const [hasDockedInput, setHasDockedInput] = useState(false);
   const [inputReady, setInputReady] = useState(false);
+  const [localAlerts, setLocalAlerts] = useState([]);
 
-  const hasUserMessage = messages.some((message) => message.sender === 'user');
+  const webchat = useWebchat({
+    clientId,
+    soundEnabled: false,
+  });
+
+  const { client, messages, user, isTyping, clientState, error } = webchat;
+
+  const botpressConfigured = Boolean(clientId);
+
+  const botpressMessages = useMemo(() => {
+    if (!messages.length) {
+      return [
+        {
+          id: 'init-welcome',
+          sender: 'ai',
+          text: DEFAULT_WELCOME,
+        },
+      ];
+    }
+
+    return messages
+      .filter((message) => message.block?.type === 'text' && typeof message.block.text === 'string')
+      .map((message) => ({
+        id: message.id,
+        sender: message.authorId === user?.userId ? 'user' : 'ai',
+        text: message.block.text,
+      }));
+  }, [messages, user?.userId]);
+
+  const statusMessages = useMemo(() => {
+    const notices = [];
+    if (!botpressConfigured) {
+      notices.push({
+        id: 'missing-client-id',
+        sender: 'ai',
+        text: "ERREUR: le Client ID Botpress est manquant. Ajoutez `VITE_BOTPRESS_CLIENT_ID` dans votre .env.",
+      });
+    }
+    if (error) {
+      notices.push({
+        id: `bp-error-${error.code ?? error.message ?? Date.now()}`,
+        sender: 'ai',
+        text: "Désolé, nous n'arrivons pas à joindre Botpress pour le moment. Réessayez sous peu.",
+      });
+    }
+    return notices;
+  }, [botpressConfigured, error]);
+
+  const combinedMessages = useMemo(
+    () => [...statusMessages, ...botpressMessages, ...localAlerts],
+    [statusMessages, botpressMessages, localAlerts]
+  );
+
+  const hasUserMessage = useMemo(
+    () => botpressMessages.some((message) => message.sender === 'user'),
+    [botpressMessages]
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setInputReady(true), 150);
@@ -22,9 +81,39 @@ export default function App() {
     }
   }, [hasDockedInput, hasUserMessage]);
 
-  const handleSend = (text) => {
-    sendMessage(text);
+  const handleSend = async (text) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    if (!botpressConfigured || !client) {
+      setLocalAlerts((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          sender: 'ai',
+          text: "ERREUR: Impossible d'envoyer le message. Vérifiez la configuration Botpress.",
+        },
+      ]);
+      return;
+    }
+
+    try {
+      await client.sendMessage({ type: 'text', text: trimmed });
+    } catch (sendError) {
+      console.error('Botpress sendMessage failed:', sendError);
+      setLocalAlerts((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          sender: 'ai',
+          text: "Désolé, l'envoi du message a échoué. Merci de réessayer.",
+        },
+      ]);
+    }
   };
+
+  const inputDisabled =
+    !botpressConfigured || clientState !== 'connected' || !client || Boolean(error);
 
   return (
     <div className="min-h-screen bg-neutral-900 text-gray-200 flex flex-col">
@@ -38,7 +127,7 @@ export default function App() {
       <main className="flex-1 flex flex-col relative overflow-hidden">
         <div className="flex-1 pb-48 px-4 sm:px-6 flex justify-center">
           <div className="w-full max-w-3xl">
-            <ChatWindow messages={messages} isTyping={isTyping} />
+            <ChatWindow messages={combinedMessages} isTyping={!error && isTyping} />
           </div>
         </div>
 
@@ -57,7 +146,7 @@ export default function App() {
 
           <ChatInput
             onSend={handleSend}
-            disabled={isTyping}
+            disabled={inputDisabled}
             className={clsx(hasDockedInput ? 'shadow-lg' : 'shadow-2xl')}
             placeholder="Pose ta question sur l’ÉDI..."
           />
