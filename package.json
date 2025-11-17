@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:proxy": "node server/localProxy.js",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "clsx": "^2.1.0",
+    "dotenv": "^17.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -21,4 +23,3 @@
     "vite": "^5.4.1"
   }
 }
-

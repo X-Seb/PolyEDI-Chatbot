@@ -4,10 +4,6 @@ import { useState, useEffect } from 'react';
 const CHAT_HISTORY_KEY = 'agoraChatHistory';
 const CONVERSATION_ID_KEY = 'agoraConversationId';
 
-// --- BOTPRESS API CONFIG (FROM .ENV) ---
-const BOT_ID = import.meta.env.VITE_BOTPRESS_BOT_ID;
-const API_KEY = import.meta.env.VITE_BOTPRESS_API_KEY;
-
 // --- Helper function to parse the two known Botpress response formats ---
 const parseBotpressResponse = (data) => {
   // Option (a): { message: { text: "..." } }
@@ -65,35 +61,21 @@ export function useChat() {
   const sendMessage = async (userInput) => {
     if (!userInput.trim()) return;
 
-    if (!BOT_ID || !API_KEY || BOT_ID === 'YOUR_BOT_ID_HERE') {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `err-${Date.now()}`,
-          sender: 'ai',
-          text: "ERREUR: L'application n'est pas connectée. Veuillez configurer `VITE_BOTPRESS_BOT_ID` et `VITE_BOTPRESS_API_KEY` dans votre fichier .env et redémarrer le serveur Vite.",
-        },
-      ]);
-      return;
-    }
-
     const userMessage = { id: `user-${Date.now()}`, sender: 'user', text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
     const conversationId = getConversationId();
-    const API_ENDPOINT = `https://api.botpress.cloud/v1/bots/${BOT_ID}/conversations/${conversationId}/messages`;
 
     try {
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch('/api/botpress', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
         },
         body: JSON.stringify({
-          type: 'text',
           text: userInput,
+          conversationId,
         }),
       });
 

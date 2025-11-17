@@ -36,8 +36,10 @@ export default function App() {
       </header>
 
       <main className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 pb-48">
-          <ChatWindow messages={messages} isTyping={isTyping} />
+        <div className="flex-1 pb-48 px-4 sm:px-6 flex justify-center">
+          <div className="w-full max-w-3xl">
+            <ChatWindow messages={messages} isTyping={isTyping} />
+          </div>
         </div>
 
         <div
