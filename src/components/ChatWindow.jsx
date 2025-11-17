@@ -9,7 +9,7 @@ export default function ChatWindow({ messages, isTyping }) {
   }, [messages, isTyping]);
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-4 p-4 sm:p-6" aria-live="polite">
+    <div className="space-y-4" aria-live="polite">
       {messages.map((message) => (
         <ChatBubble key={message.id} message={message} />
       ))}

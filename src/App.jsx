@@ -4,7 +4,7 @@ import { useWebchat } from '@botpress/webchat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
 
-const DEFAULT_WELCOME = "Bonjour! Je suis PolyÉDI. Posez-moi une question sur l'ÉDI et les équipes de projet.";
+const DEFAULT_WELCOME = "Salut! Moi c'est PolyÉDI. Je suis là pour t'accompagner sur l'ÉDI et le travail d'équipe. Pose-moi tes questions!";
 
 export default function App() {
   const clientId = import.meta.env.VITE_BOTPRESS_CLIENT_ID ?? '';
@@ -22,14 +22,9 @@ export default function App() {
   const botpressConfigured = Boolean(clientId);
 
   const botpressMessages = useMemo(() => {
+    // Don't show initial welcome message - it's shown above the textbox instead
     if (!messages.length) {
-      return [
-        {
-          id: 'init-welcome',
-          sender: 'ai',
-          text: DEFAULT_WELCOME,
-        },
-      ];
+      return [];
     }
 
     const transformed = messages
@@ -78,7 +73,7 @@ export default function App() {
       notices.push({
         id: `bp-error-${error.code ?? error.message ?? Date.now()}`,
         sender: 'ai',
-        text: "Désolé, nous n'arrivons pas à joindre Botpress pour le moment. Réessayez sous peu.",
+        text: "Désolé, nous avons des problèmes techniques au moment. Réessayez sous peu.",
       });
     }
     return notices;
@@ -143,7 +138,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-neutral-900 text-gray-200 flex flex-col">
-      <header className="border-b border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <header className="sticky top-0 z-10 bg-neutral-900 border-b border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 to-green-500">
             PolyÉDI
@@ -158,11 +153,11 @@ export default function App() {
             </button>
           )}
         </div>
-        <p className="text-sm text-gray-400">Conseiller virtuel pour des équipes inclusives.</p>
+        <p className="text-base font-bold text-gray-300">Conseiller virtuel pour des équipes inclusives.</p>
       </header>
 
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 pb-48 px-4 sm:px-6 flex justify-center">
+      <main className="flex-1 flex flex-col relative overflow-hidden min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex justify-center">
           <div className="w-full max-w-3xl">
             <ChatWindow messages={combinedMessages} isTyping={!error && isTyping} />
           </div>
@@ -170,14 +165,16 @@ export default function App() {
 
         <div
           className={clsx(
-            'absolute left-1/2 bottom-6 -translate-x-1/2 w-full px-4 sm:px-0 flex flex-col items-center gap-4 transition-all duration-700 ease-out',
-            hasDockedInput ? 'translate-y-0' : '-translate-y-[40vh]',
+            'w-full px-4 sm:px-6 py-4 bg-neutral-900/95 backdrop-blur-sm border-t border-neutral-800 flex flex-col items-center gap-4 transition-all duration-700 ease-out',
+            hasDockedInput 
+              ? 'sticky bottom-0 left-0 right-0 translate-y-0' 
+              : 'absolute left-1/2 -translate-x-1/2 -translate-y-[40vh]',
             inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
           )}
         >
           {!hasDockedInput && (
             <p className="text-center text-lg sm:text-xl text-gray-300 drop-shadow-lg">
-              Salut! Moi, c&apos;est PolyÉDI. Comment puis-je t&apos;aider?
+              {DEFAULT_WELCOME}
             </p>
           )}
 
