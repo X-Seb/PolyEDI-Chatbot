@@ -8,7 +8,10 @@ const DEFAULT_WELCOME = "Salut! Moi c'est PolyÉDI. Je suis là pour t'accompagn
 
 export default function App() {
   const clientId = import.meta.env.VITE_BOTPRESS_CLIENT_ID ?? '';
-  const [hasDockedInput, setHasDockedInput] = useState(false);
+  const [hasDockedInput, setHasDockedInput] = useState(() => {
+    // Initialize based on whether messages exist (will be updated when messages load)
+    return false;
+  });
   const [inputReady, setInputReady] = useState(false);
   const [localAlerts, setLocalAlerts] = useState([]);
 
@@ -20,6 +23,16 @@ export default function App() {
   const { client, messages, user, isTyping, clientState, error, newConversation } = webchat;
 
   const botpressConfigured = Boolean(clientId);
+  
+  // Track if messages have been loaded from Botpress
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Once we have messages array (even if empty), consider it loaded
+    if (messages !== undefined) {
+      setMessagesLoaded(true);
+    }
+  }, [messages]);
 
   const botpressMessages = useMemo(() => {
     // Don't show initial welcome message - it's shown above the textbox instead
@@ -60,6 +73,9 @@ export default function App() {
     return transformed;
   }, [messages, user?.userId]);
 
+  // Check if there are existing messages on mount to avoid flash
+  const hasExistingMessages = useMemo(() => botpressMessages.some((message) => message.sender === 'user'), [botpressMessages]);
+
   const statusMessages = useMemo(() => {
     const notices = [];
     if (!botpressConfigured) {
@@ -95,16 +111,23 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Set hasDockedInput immediately when messages load to prevent flash
   useEffect(() => {
-    if (hasUserMessage && !hasDockedInput) {
+    if (hasUserMessage) {
       setHasDockedInput(true);
-    } else if (!hasUserMessage && hasDockedInput && messages.length === 0) {
-      // Reset when conversation is cleared
+    } else if (messages.length === 0 && hasDockedInput) {
+      // Only reset when conversation is explicitly cleared (messages.length is 0 and we're already docked)
       setHasDockedInput(false);
-      // Ensure input is visible after reset
       setInputReady(true);
     }
-  }, [hasDockedInput, hasUserMessage, messages.length]);
+  }, [hasUserMessage, messages.length]);
+
+  // Initialize hasDockedInput on mount if messages already exist
+  useEffect(() => {
+    if (hasExistingMessages && !hasDockedInput) {
+      setHasDockedInput(true);
+    }
+  }, [hasExistingMessages]);
 
   const handleSend = async (text) => {
     const trimmed = text.trim();
@@ -170,7 +193,7 @@ export default function App() {
       <main className="flex-1 flex flex-col relative overflow-hidden min-h-0 pt-[73px]">
         <div className={clsx('flex-1 overflow-y-auto px-4 sm:px-6 flex justify-center transition-all duration-700', hasDockedInput ? 'py-6 pb-32' : 'pb-6')}>
           <div className="w-full max-w-3xl">
-            {!hasDockedInput && (
+            {!hasDockedInput && messagesLoaded && (
               <div className="flex items-center justify-center min-h-[calc(100vh-300px)] -mt-16">
                 <div className="text-center space-y-4">
                   <p className="text-lg sm:text-xl text-gray-300 drop-shadow-lg">
@@ -198,19 +221,21 @@ export default function App() {
             />
           </div>
         ) : (
-          <div
-            className={clsx(
-              'absolute left-0 right-0 top-[45%] -translate-y-1/2 w-full px-4 sm:px-6 py-4 flex flex-col items-center gap-4 z-30 transition-all duration-700 ease-out',
-              inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            )}
-          >
-            <ChatInput
-              onSend={handleSend}
-              disabled={sendDisabled}
-              className="shadow-2xl"
-              placeholder="Pose ta question sur l'ÉDI..."
-            />
-          </div>
+          messagesLoaded && (
+            <div
+              className={clsx(
+                'absolute left-0 right-0 top-[45%] -translate-y-1/2 w-full px-4 sm:px-6 py-4 flex flex-col items-center gap-4 z-30 transition-all duration-700 ease-out',
+                inputReady ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              )}
+            >
+              <ChatInput
+                onSend={handleSend}
+                disabled={sendDisabled}
+                className="shadow-2xl"
+                placeholder="Pose ta question sur l'ÉDI..."
+              />
+            </div>
+          )
         )}
       </main>
     </div>
