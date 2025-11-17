@@ -5,7 +5,7 @@ export default function ChatInput({
   onSend,
   disabled = false,
   className,
-  placeholder = 'Pose ta question sur l'ÉDI...',
+  placeholder = "Pose ta question sur l'ÉDI...",
 }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef(null);
