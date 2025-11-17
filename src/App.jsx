@@ -32,13 +32,38 @@ export default function App() {
       ];
     }
 
-    return messages
-      .filter((message) => message.block?.type === 'text' && typeof message.block.text === 'string')
-      .map((message) => ({
-        id: message.id,
-        sender: message.authorId === user?.userId ? 'user' : 'ai',
-        text: message.block.text,
-      }));
+    const transformed = messages
+      .map((message) => {
+        // Debug: log message structure
+        console.log('Botpress message:', message);
+
+        // Check if message has text block
+        if (message.block?.type === 'text' && typeof message.block.text === 'string') {
+          const isUserMessage = message.authorId === user?.userId;
+          return {
+            id: message.id,
+            sender: isUserMessage ? 'user' : 'ai',
+            text: message.block.text,
+          };
+        }
+
+        // Fallback: check for text in other possible locations
+        if (typeof message.text === 'string') {
+          const isUserMessage = message.authorId === user?.userId;
+          return {
+            id: message.id,
+            sender: isUserMessage ? 'user' : 'ai',
+            text: message.text,
+          };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+
+    console.log('Transformed messages:', transformed);
+    console.log('User ID:', user?.userId);
+    return transformed;
   }, [messages, user?.userId]);
 
   const statusMessages = useMemo(() => {
