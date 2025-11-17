@@ -17,7 +17,7 @@ export default function App() {
     soundEnabled: false,
   });
 
-  const { client, messages, user, isTyping, clientState, error } = webchat;
+  const { client, messages, user, isTyping, clientState, error, newConversation } = webchat;
 
   const botpressConfigured = Boolean(clientId);
 
@@ -112,14 +112,27 @@ export default function App() {
     }
   };
 
-  const inputDisabled =
+  // Allow typing even when not connected, but disable send button
+  const inputDisabled = false; // Always allow typing
+  const sendDisabled =
     !botpressConfigured || clientState !== 'connected' || !client || Boolean(error);
 
   return (
     <div className="min-h-screen bg-neutral-900 text-gray-200 flex flex-col">
       <header className="border-b border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 to-green-500">
-          PolyÉDI
+        <div className="flex items-center gap-4">
+          <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 via-blue-500 to-green-500">
+            PolyÉDI
+          </div>
+          {botpressConfigured && client && (
+            <button
+              onClick={newConversation}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-800 hover:bg-neutral-700 text-gray-300 border border-neutral-700 transition-colors"
+              title="Nouvelle conversation"
+            >
+              Réinitialiser
+            </button>
+          )}
         </div>
         <p className="text-sm text-gray-400">Conseiller virtuel pour des équipes inclusives.</p>
       </header>
@@ -146,9 +159,9 @@ export default function App() {
 
           <ChatInput
             onSend={handleSend}
-            disabled={inputDisabled}
+            disabled={sendDisabled}
             className={clsx(hasDockedInput ? 'shadow-lg' : 'shadow-2xl')}
-            placeholder="Pose ta question sur l’ÉDI..."
+            placeholder="Pose ta question sur l'ÉDI..."
           />
         </div>
       </main>

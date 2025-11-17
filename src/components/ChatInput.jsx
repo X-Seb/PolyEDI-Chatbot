@@ -12,7 +12,7 @@ export default function ChatInput({
   const handleSubmit = (event) => {
     event.preventDefault();
     const trimmed = value.trim();
-    if (!trimmed) return;
+    if (!trimmed || disabled) return;
     onSend(trimmed);
     setValue('');
   };
@@ -22,7 +22,6 @@ export default function ChatInput({
       onSubmit={handleSubmit}
       className={clsx(
         'w-full max-w-3xl bg-neutral-800/80 backdrop-blur ring-1 ring-orange-500/60 rounded-2xl p-3 sm:p-4 shadow-2xl transition-all',
-        disabled && 'opacity-60 cursor-not-allowed',
         className
       )}
     >
@@ -33,7 +32,7 @@ export default function ChatInput({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          disabled={disabled}
+          disabled={false}
         />
         <button
           type="submit"
